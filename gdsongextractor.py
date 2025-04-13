@@ -270,10 +270,10 @@ class GeometryDashSongManager(QMainWindow):
         self.gd_path = None
         self.music_path = None
 
-        # *** FIX: Create UI FIRST ***
+        # Create UI FIRST
         self.init_ui()
 
-        # *** FIX: Now get paths AFTER UI (and log_text) exists ***
+        # Now get paths AFTER UI (and log_text) exists
         self.gd_path = self.get_gd_songs_path()
         self.music_path = self.get_music_folder_path()
 
@@ -287,64 +287,13 @@ class GeometryDashSongManager(QMainWindow):
             self.log("ERROR: Couldn't find Geometry Dash folder")
             self.scan_btn.setEnabled(False)
         if not self.music_path:
-            # Log message was slightly adjusted in previous response, keeping it
             self.log("ERROR: Couldn't find default Music folder (but created one if possible)")
-
 
     def init_ui(self):
         # Main layout
         main_layout = QVBoxLayout()
 
-        # --- Banner Modification START ---
-        banner_widget = QWidget()
-        banner_layout = QVBoxLayout(banner_widget)
-        banner_layout.setContentsMargins(0, 0, 0, 0) # Keep margins zero
-
-        banner_label = QLabel() # Create an empty QLabel
-        banner_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        # Construct the path to the image relative to the script
-        # Assumes 'resources' folder is in the same directory as the script
-        try:
-             # Get the directory the script is in
-             # Handle case where script might be frozen (e.g., with PyInstaller)
-            if getattr(sys, 'frozen', False):
-                 script_dir = Path(sys.executable).parent
-            else:
-                 script_dir = Path(__file__).parent
-            image_path = script_dir / 'resources' / 'banner.png' # CHANGE 'banner.png' if your image has a different name
-
-            if image_path.exists():
-                pixmap = QPixmap(str(image_path))
-                # Dynamically get initial width or use a default if window not shown yet
-                initial_width = self.width() if self.width() > 0 else 900 # Use minimum width as default
-                # Scale the pixmap smoothly while keeping aspect ratio
-                scaled_pixmap = pixmap.scaledToWidth(initial_width, Qt.TransformationMode.SmoothTransformation)
-                banner_label.setPixmap(scaled_pixmap)
-                # Set height based on the scaled pixmap's 16:9 aspect ratio
-                banner_height = int(initial_width * 9 / 16)
-                banner_label.setFixedSize(initial_width, banner_height) # Use fixed size for consistency
-                # Optional: Set background for letterboxing if image aspect ratio doesn't perfectly match label
-                banner_label.setStyleSheet("background-color: black;")
-
-            else:
-                # Fallback if image not found
-                banner_label.setText("Banner Image Not Found in resources/banner.png")
-                banner_label.setStyleSheet("font-size: 18px; font-weight: bold; background-color: #DC143C; color: white; padding: 20px;") # Crimson fallback
-                banner_label.setFixedHeight(int( (self.width() if self.width() > 0 else 900) * 9 / 16 / 3)) # Fallback height, roughly 1/3rd
-
-        except Exception as e:
-             # General fallback for any error during image loading/path finding
-            banner_label.setText(f"Error loading banner: {e}")
-            banner_label.setStyleSheet("font-size: 12px; font-weight: bold; background-color: #FF8C00; color: white; padding: 10px;") # DarkOrange fallback
-            banner_label.setFixedHeight(int( (self.width() if self.width() > 0 else 900) * 9 / 16 / 3)) # Fallback height
-
-        banner_layout.addWidget(banner_label)
-        main_layout.addWidget(banner_widget)
-        # --- Banner Modification END ---
-
-
-        # Main content area (rest of your UI code follows)
+        # Main content area
         content_widget = QWidget()
         content_layout = QVBoxLayout(content_widget)
         main_layout.addWidget(content_widget, 1)
@@ -353,7 +302,7 @@ class GeometryDashSongManager(QMainWindow):
         paths_group = QGroupBox("Folder Paths")
         paths_layout = QVBoxLayout(paths_group)
 
-        # *** FIX: Initialize labels with placeholder text ***
+        # Initialize labels with placeholder text
         self.gd_path_label = QLabel("Geometry Dash Folder: Initializing...")
         self.music_path_label = QLabel("Music Folder: Initializing...")
 
@@ -374,7 +323,6 @@ class GeometryDashSongManager(QMainWindow):
         log_group = QGroupBox("Log")
         log_layout = QVBoxLayout(log_group)
 
-        # *** FIX: This is where self.log_text is created ***
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
         log_layout.addWidget(self.log_text)
@@ -462,46 +410,6 @@ class GeometryDashSongManager(QMainWindow):
         central_widget = QWidget()
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
-
-        # *** FIX: Initial logging moved to the end of __init__ ***
-
-
-    # Override resizeEvent to rescale the banner
-    def resizeEvent(self, event):
-        super().resizeEvent(event) # Call base class implementation
-        # Find the banner label (assuming it's the first widget in the banner_layout)
-        try: # Add try-except block for safety during resize
-             banner_widget = self.centralWidget().layout().itemAt(0).widget() # Get the banner_widget
-             if banner_widget and banner_widget.layout() and banner_widget.layout().count() > 0:
-                 banner_label = banner_widget.layout().itemAt(0).widget()
-                 if isinstance(banner_label, QLabel) and banner_label.pixmap(): # Check if it's a QLabel with a pixmap
-                    # Rescale the existing pixmap based on the new window width
-                    # Reload the original pixmap to prevent quality loss from repeated scaling
-                    if getattr(sys, 'frozen', False):
-                        script_dir = Path(sys.executable).parent
-                    else:
-                        script_dir = Path(__file__).parent
-                    image_path = script_dir / 'resources' / 'banner.png' # Ensure this matches your image name
-
-                    if image_path.exists():
-                         original_pixmap = QPixmap(str(image_path))
-                         new_width = self.width()
-                         # Prevent scaling to zero width if window is minimized weirdly
-                         if new_width > 0:
-                             scaled_pixmap = original_pixmap.scaledToWidth(new_width, Qt.TransformationMode.SmoothTransformation)
-                             banner_label.setPixmap(scaled_pixmap)
-                             # Adjust label size to match the scaled pixmap
-                             banner_height = int(new_width * 9 / 16)
-                             banner_label.setFixedSize(new_width, banner_height)
-                    else:
-                         # Handle case where image might have been deleted after startup
-                         banner_label.setText("Banner Image Not Found")
-
-        except Exception as e:
-             # Log error without interrupting resize if possible
-             if hasattr(self, 'log'):
-                 self.log(f"Error rescaling banner: {e}")
-
 
     def log(self, message):
         """Add a message to the log"""
@@ -676,7 +584,6 @@ class GeometryDashSongManager(QMainWindow):
                  self.log(f"ERROR: Cannot write to selected folder: {new_path}")
                  # Optionally show a message box to the user here using QMessageBox
 
-
     def scan_songs(self):
         """Scan for song files and fetch metadata"""
         if not self.gd_path: # Add check here
@@ -750,7 +657,6 @@ class GeometryDashSongManager(QMainWindow):
         """Update the song list with fetched songs"""
         # Sort songs alphabetically by artist, then title
         self.songs = sorted(songs, key=lambda s: (s['artist'].lower(), s['title'].lower()))
-
 
         if not self.songs: # Check after sorting
             self.log("No songs found or all metadata fetches failed.")
