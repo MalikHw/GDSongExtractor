@@ -2,6 +2,8 @@
 
 [![Donate](https://img.shields.io/badge/Donate-Ko--fi-blue.svg)](https://ko-fi.com/MalikHw47)
 
+***NO APP ICON FOR NOW LOL***
+
 GDSongExtractor is a desktop application that helps you easily find, identify, and manage the custom songs downloaded by Geometry Dash. It automatically scans your Geometry Dash installation folder, fetches song metadata (like title, artist, and genre) from Newgrounds using the song ID, and allows you to copy the songs with proper ID3 tags to your music library.
 
 ![Screenshot Placeholder](/screenshots/placeholder.png)
