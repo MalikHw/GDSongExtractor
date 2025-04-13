@@ -22,7 +22,7 @@ GDSongExtractor is a desktop application that helps you easily find, identify, a
 
 ## Installation (Using Pre-built Executable)
 
-1.  **Go to the Releases Page:** Navigate to the [Releases](https://github.com/MalikHw/GDSongExtractorreleases) section of this GitHub repository. *(<- Make sure this link points to your repository!)*
+1.  **Go to the Releases Page:** Navigate to the [Releases](https://github.com/MalikHw/GDSongExtractor/releases) section
 2.  **Download the Latest Version:** Find the latest release and download the appropriate executable file for your operating system (`.exe` for Windows, an installation script for Linux).
 3.  **Run the setup:** Whether you're on Windows or Linux, just run the setup file (`install.sh` for linux and `gdsongextractor-*-windows.exe` for windows.
 
