@@ -17,8 +17,7 @@ GDSongExtractor is a desktop application that helps you easily find, identify, a
 * **Song Listing & Filtering:** Displays found songs in a sortable list and allows filtering by artist or title.
 * **Selective Copying:** Choose which songs you want to copy to your music folder.
 * **Custom Music Folder:** Allows you to specify a custom destination folder for copied songs.
-* **Cross-Platform:** Executables available for Windows, Linux, and macOS (check releases!).
-* **Customizable Banner:** Supports a custom 16:9 banner image placed in a `resources` folder next to the executable.
+* **Cross-Platform:** Executables available for Windows, Linux...(debian only)
 
 ## Installation (Using Pre-built Executable)
 
