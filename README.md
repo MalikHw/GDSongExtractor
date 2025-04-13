@@ -23,9 +23,14 @@ GDSongExtractor is a desktop application that helps you easily find, identify, a
 
 1.  **Go to the Releases Page:** Navigate to the [Releases](https://github.com/MalikHw/GDSongExtractor/releases) section
 2.  **Download the Latest Version:** Find the latest release and download the appropriate executable file for your operating system (`.exe` for Windows, an installation script for Linux).
-3.  **Run the setup:** Whether you're on Windows or Linux, just run the setup file (`install.sh` for linux and `gdsongextractor-*-windows.exe` for windows.
+3.  **Run the setup:** Whether you're on Windows or Linux, just run the setup file (`sudo bash install.sh install` for linux and `gdsongextractor-*-windows.exe` for windows.
 
 That's it! No Python installation or dependencies needed for end-users.
+
+## Uninstallation:
+
+- make sure you still have the linux installation zip file, go to it and run `sudo bash install.sh uninstall`
+- for windows, just head to Programs&features and select GDSongExtractor
 
 ## Usage
 
