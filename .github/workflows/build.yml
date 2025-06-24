@@ -1,0 +1,240 @@
+name: Build and Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyQt6 pyinstaller Pillow beautifulsoup4 requests mutagen
+
+    - name: Convert icon for Windows
+      run: |
+        python -c "
+        from PIL import Image
+        img = Image.open('icon.png')
+        img.save('icon.ico', format='ICO', sizes=[(16,16), (32,32), (48,48), (64,64), (128,128), (256,256)])
+        "
+
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --onefile --windowed --icon=icon.ico --name=GDSongExtractor-Win gdsongextractor.py
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-build
+        path: dist/GDSongExtractor-Win.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyQt6 pyinstaller Pillow beautifulsoup4 requests mutagen
+
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --onefile --icon=icon.png --name=GDSongExtractor-linux gdsongextractor.py
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-build
+        path: dist/GDSongExtractor-linux
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyQt6 pyinstaller Pillow beautifulsoup4 requests mutagen
+
+    - name: Convert icon for macOS
+      run: |
+        python -c "
+        from PIL import Image
+        import os
+        
+        # Create iconset directory
+        os.makedirs('icon.iconset', exist_ok=True)
+        
+        # Load the PNG image
+        img = Image.open('icon.png')
+        
+        # Generate different sizes for iconset
+        sizes = [16, 32, 64, 128, 256, 512, 1024]
+        for size in sizes:
+            resized = img.resize((size, size), Image.Resampling.LANCZOS)
+            resized.save(f'icon.iconset/icon_{size}x{size}.png')
+            if size <= 512:  # Also create @2x versions for smaller sizes
+                resized.save(f'icon.iconset/icon_{size//2}x{size//2}@2x.png')
+        "
+        
+        # Convert iconset to icns
+        iconutil -c icns icon.iconset
+
+    - name: Build with PyInstaller
+      run: |
+        pyinstaller --onefile --windowed --icon=icon.icns --name=GDSongExtractor-Darwin gdsongextractor.py
+
+    - name: Create DMG
+      run: |
+        mkdir -p dist-dmg
+        cp -r dist/GDSongExtractor-Darwin.app dist-dmg/
+        hdiutil create -volname "GDSongExtractor" -srcfolder dist-dmg -ov -format UDZO dist/GDSongExtractor-Darwin.dmg
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-build
+        path: dist/GDSongExtractor-Darwin.dmg
+
+  release:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+    
+    - name: Create desktop file
+      run: |
+        cat > gdsongextractor.desktop << EOF
+        [Desktop Entry]
+        Name=GDSongExtractor
+        Comment=Extract and manage Geometry Dash custom songs
+        Exec=gdsongextractor
+        Icon=gdsongextractor
+        Terminal=false
+        Type=Application
+        Categories=AudioVideo;Audio;
+        EOF
+    
+    - name: Upload Release Assets
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: |
+          ./windows-build/GDSongExtractor-Win.exe
+          ./macos-build/GDSongExtractor-Darwin.dmg
+          ./linux-build/GDSongExtractor-linux
+          ./gdsongextractor.desktop
+          ./icon.png
+
+  update-aur:
+    needs: release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup SSH for AUR
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.AUR_SSH_KEY }}" > ~/.ssh/aur
+        chmod 600 ~/.ssh/aur
+        ssh-keyscan -H aur.archlinux.org >> ~/.ssh/known_hosts
+        cat > ~/.ssh/config << EOF
+        Host aur.archlinux.org
+          HostName aur.archlinux.org
+          User aur
+          IdentityFile ~/.ssh/aur
+        EOF
+
+    - name: Install makepkg dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y pacman-package-manager
+
+    - name: Clone AUR repository
+      run: |
+        git clone ssh://aur@aur.archlinux.org/gdsongextractor-bin.git aur-repo
+
+    - name: Update AUR package
+      run: |
+        cd aur-repo
+        
+        # Get version from release tag
+        VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\/v//')
+        
+        # Update PKGBUILD
+        cat > PKGBUILD << EOF
+        # Maintainer: MalikHw47 <help.malicorporation@gmail.com>
+        pkgname=gdsongextractor-bin
+        pkgver=${VERSION}
+        pkgrel=1
+        pkgdesc="A cool-ahh tool for exporting and managing Geometry Dash custom songs with metadata"
+        arch=('x86_64')
+        url="https://github.com/MalikHw/GDSongExtractor"
+        license=('MIT')
+        depends=('qt6-base')
+        provides=('gdsongextractor')
+        conflicts=('gdsongextractor')
+        source=("${pkgname}-${pkgver}::${url}/releases/download/v${pkgver}/GDSongExtractor-linux"
+                "${pkgname}-${pkgver}.desktop::${url}/releases/download/v${pkgver}/gdsongextractor.desktop"
+                "${pkgname}-${pkgver}.png::${url}/releases/download/v${pkgver}/icon.png")
+        sha256sums=('SKIP'
+                    'SKIP'
+                    'SKIP')
+
+        package() {
+            # Install the binary
+            install -Dm755 "\${srcdir}/\${pkgname}-\${pkgver}" "\${pkgdir}/usr/bin/gdsongextractor"
+            
+            # Install desktop file
+            install -Dm644 "\${srcdir}/\${pkgname}-\${pkgver}.desktop" "\${pkgdir}/usr/share/applications/gdsongextractor.desktop"
+            
+            # Install icon
+            install -Dm644 "\${srcdir}/\${pkgname}-\${pkgver}.png" "\${pkgdir}/usr/share/pixmaps/gdsongextractor.png"
+        }
+        EOF
+        
+        # Generate .SRCINFO using makepkg
+        makepkg --printsrcinfo > .SRCINFO
+        
+        # Configure Git
+        git config user.name "malikhw"
+        git config user.email "help.malicorporation@gmail.com"
+        
+        # Commit and push changes
+        git add PKGBUILD .SRCINFO
+        git commit -m "Update to version ${VERSION}"
+        git push origin master
