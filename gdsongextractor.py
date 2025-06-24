@@ -262,7 +262,7 @@ class GeometryDashSongManager(QMainWindow):
         super().__init__()
 
         # Setup window properties
-        self.setWindowTitle("GDSongExtractor v1.0 by MalikHw47")
+        self.setWindowTitle("GDSongExtractor v1.0.2 by MalikHw47")
         self.setMinimumSize(900, 650)
 
         # Initialize variables - Set gd_path and music_path to None initially
@@ -282,7 +282,7 @@ class GeometryDashSongManager(QMainWindow):
         self.music_path_label.setText(f"Music Folder: {self.music_path if self.music_path else 'Not Found'}")
 
         # Log initial status *after* UI exists
-        self.log("GDSongExtractor v1.0 started")
+        self.log("GDSongExtractor v1.0.2 started")
         if not self.gd_path:
             self.log("ERROR: Couldn't find Geometry Dash folder")
             self.scan_btn.setEnabled(False)
