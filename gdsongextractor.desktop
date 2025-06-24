@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=GDSongExtractor
+Comment=Extract and manage Geometry Dash custom songs with metadata
+Exec=gdsongextractor
+Icon=gdsongextractor
+Terminal=false
+Type=Application
+Categories=AudioVideo;Audio;
+Keywords=geometry;dash;music;songs;extractor;newgrounds;
