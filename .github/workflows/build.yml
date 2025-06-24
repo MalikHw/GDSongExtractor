@@ -196,13 +196,13 @@ jobs:
         cd aur-repo
         
         # Get version from release tag
-        VERSION=$(echo $GITHUB_REF | sed 's/refs\/tags\/v//')
+        FULL_VERSION=${GITHUB_REF#refs/tags/}
         
         # Update PKGBUILD
         cat > PKGBUILD << EOF
         # Maintainer: MalikHw47 <help.malicorporation@gmail.com>
         pkgname=gdsongextractor-bin
-        pkgver=${VERSION}
+        pkgver=${FULL_VERSION#v}
         pkgrel=1
         pkgdesc="A cool-ahh tool for exporting and managing Geometry Dash custom songs with metadata"
         arch=('x86_64')
@@ -211,9 +211,9 @@ jobs:
         depends=()
         provides=('gdsongextractor')
         conflicts=('gdsongextractor')
-        source=("GDSongExtractor-linux::https://github.com/MalikHw/GDSongExtractor/releases/download/${pkgver}/GDSongExtractor-linux"
-                "gdsongextractor.desktop::https://github.com/MalikHw/GDSongExtractor/releases/download/${pkgver}/gdsongextractor.desktop"
-                "gdsongextractor.png::https://github.com/MalikHw/GDSongExtractor/releases/download/${pkgver}/icon.png")
+        source=("GDSongExtractor-linux::https://github.com/MalikHw/GDSongExtractor/releases/download/${FULL_VERSION}/GDSongExtractor-linux"
+                "gdsongextractor.desktop::https://github.com/MalikHw/GDSongExtractor/releases/download/${FULL_VERSION}/gdsongextractor.desktop"
+                "gdsongextractor.png::https://github.com/MalikHw/GDSongExtractor/releases/download/${FULL_VERSION}/icon.png")
         sha256sums=('SKIP'
                     'SKIP'
                     'SKIP')
@@ -239,5 +239,5 @@ jobs:
         
         # Commit and push changes
         git add PKGBUILD .SRCINFO
-        git commit -m "Update to version ${VERSION}"
+        git commit -m "Update to version ${FULL_VERSION}"
         git push origin master
