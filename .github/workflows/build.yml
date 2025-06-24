@@ -6,8 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write  # For uploading artifacts
-  releases: write  # For creating/modifying releases
+  contents: write
 
 jobs:
   build-windows:
