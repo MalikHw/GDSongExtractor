@@ -208,12 +208,12 @@ jobs:
         arch=('x86_64')
         url="https://github.com/MalikHw/GDSongExtractor"
         license=('MIT')
-        depends=('qt6-base')
+        depends=()
         provides=('gdsongextractor')
         conflicts=('gdsongextractor')
-        source=("${pkgname}-${pkgver}::${url}/releases/download/v${pkgver}/GDSongExtractor-linux"
-                "${pkgname}-${pkgver}.desktop::${url}/releases/download/v${pkgver}/gdsongextractor.desktop"
-                "${pkgname}-${pkgver}.png::${url}/releases/download/v${pkgver}/icon.png")
+        source=("GDSongExtractor-linux::https://github.com/MalikHw/GDSongExtractor/releases/download/${pkgver}/GDSongExtractor-linux"
+                "gdsongextractor.desktop::https://github.com/MalikHw/GDSongExtractor/releases/download/${pkgver}/gdsongextractor.desktop"
+                "gdsongextractor.png::https://github.com/MalikHw/GDSongExtractor/releases/download/${pkgver}/icon.png")
         sha256sums=('SKIP'
                     'SKIP'
                     'SKIP')
